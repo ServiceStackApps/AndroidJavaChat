@@ -2,19 +2,36 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="servicestack.net.androidchat">
 
+    <uses-sdk />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity android:name=".MainActivity">
+        </activity>
+
+        <activity android:name=".LoginActivity">
+        </activity>
+
+        <activity android:name=".LoginButtonsActivity">
+            <!-- Move to .LoginActivity if you prefer that login page instead -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data android:name="io.fabric.ApiKey" android:value="b2d318d908fceea66ab422d2d31907d9444b01cc" />
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+
     </application>
 
 </manifest>
