@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         MainActivity mainActivity = this;
         cmdReceiver = new ChatCommandHandler(mainActivity, messageHistoryAdapter, "home");
 
-        getClient()
+        App.get().getServerEventsClient()
             .setOnConnect(connectMsg -> {
                 Extensions.updateChatHistory(getClient(), cmdReceiver, () -> {
                     Extensions.updateUserProfile(connectMsg, mainActivity);

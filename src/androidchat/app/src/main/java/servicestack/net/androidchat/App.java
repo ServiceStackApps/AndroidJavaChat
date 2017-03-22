@@ -20,8 +20,6 @@ import net.servicestack.client.AsyncSuccess;
  */
 
 public class App extends Application {
-    public static final String BaseUrl = "http://chat.servicestack.net/";
-
     private Context context;
     private SharedPreferences prefs;
     private AndroidServerEventsClient serverEventsClient;
@@ -34,15 +32,15 @@ public class App extends Application {
 
     public App() {}
 
-    public App(Context context, String... channels) {
+    public App(Context context) {
         this.context = context;
         this.prefs = context.getSharedPreferences("servicestack.net.androidchat",Context.MODE_PRIVATE);
-        serverEventsClient = new AndroidServerEventsClient(BaseUrl, channels);
+        serverEventsClient = new AndroidServerEventsClient("http://chat.servicestack.net/", "home");
     }
 
     public void onCreate() {
         super.onCreate();
-        instance = new App(getApplicationContext(), "home");
+        instance = new App(getApplicationContext());
     }
 
     public static App get() {
