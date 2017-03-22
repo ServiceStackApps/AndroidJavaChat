@@ -49,8 +49,8 @@ public class MainActivity extends AppCompatActivity {
     private static Map<String, String> commands = Func.toDictionary(
         "Announce Hello",     "/cmd.announce Hello from Java Android",
         "Play YouTube",       "/tv.watch https://youtu.be/u5CVsCnxyXg",
-        "Background Image",   "/css.background-image url(http://bit.ly/2lZxbHv)",
-        "Background Top",     "/css.background$#top #86B951",
+        "Background Image",   "/css.background-image url(http://i.imgur.com/YQ2jcdC.jpg)",
+        "Background Top",     "/css.background$#top #638D0D",
         "Background Color",   "/css.background #eceff1",
         "Background Bottom",  "/css.background$#bottom #91C654",
         "Logout",             "/logout"
