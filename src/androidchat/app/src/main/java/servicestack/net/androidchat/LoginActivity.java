@@ -153,7 +153,9 @@ public class LoginActivity extends AppCompatActivity {
         ImageButton btnAnon = (ImageButton)findViewById(R.id.btnAnon);
         btnAnon.setOnClickListener(view -> {
             UiHelpers.setStatus(txtStatus, "Opening chat as guest...");
-            startGuestChatActivity(App.get().getServiceClient());
+            App.get().getServiceClient().clearCookies();
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
         });
 
         dtos.Authenticate authDto = App.get().getSavedAccessToken();
@@ -191,12 +193,5 @@ public class LoginActivity extends AppCompatActivity {
             progressBar.clearAnimation();
             progressBar.setVisibility(View.INVISIBLE);
         });
-    }
-
-    private void startGuestChatActivity(AndroidServiceClient client)
-    {
-        client.clearCookies();
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
     }
 }
