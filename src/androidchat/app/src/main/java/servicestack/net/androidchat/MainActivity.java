@@ -91,14 +91,12 @@ public class MainActivity extends AppCompatActivity {
                     Extensions.updateUserProfile(connectMsg, mainActivity);
                 });
             })
-            .setOnCommand(command -> {
-                if (command instanceof ServerEventJoin){
-                    getClient().getChannelSubscribersAsync(r -> {
-                        subscriberList = r;
-                        // Refresh profile icons when users join
-                        messageHistoryAdapter.notifyDataSetChanged();
-                    });
-                }
+            .setOnJoin(msg -> {
+                getClient().getChannelSubscribersAsync(r -> {
+                    subscriberList = r;
+                    // Refresh profile icons when users join
+                    messageHistoryAdapter.notifyDataSetChanged();
+                });
             })
             .setOnException(error -> mainActivity.runOnUiThread(() ->
                 Toast.makeText(this, "Error : " + error.getMessage(), Toast.LENGTH_LONG)))
