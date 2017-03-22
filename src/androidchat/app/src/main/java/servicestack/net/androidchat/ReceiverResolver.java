@@ -6,10 +6,10 @@ import net.servicestack.client.IResolver;
  * Created by mythz on 2/15/2017.
  */
 
-public class MessageResolver implements IResolver {
+public class ReceiverResolver implements IResolver {
     ChatCommandHandler messageHandler;
 
-    public MessageResolver(ChatCommandHandler messageHandler) {
+    public ReceiverResolver(ChatCommandHandler messageHandler) {
         this.messageHandler = messageHandler;
     }
 

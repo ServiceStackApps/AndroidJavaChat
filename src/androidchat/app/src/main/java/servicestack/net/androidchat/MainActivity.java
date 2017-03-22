@@ -16,8 +16,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.facebook.login.LoginManager;
-
 import net.servicestack.android.AndroidServerEventsClient;
 import net.servicestack.client.Utils;
 import net.servicestack.client.sse.ServerEventJoin;
@@ -104,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             })
             .setOnException(error -> mainActivity.runOnUiThread(() ->
                 Toast.makeText(this, "Error : " + error.getMessage(), Toast.LENGTH_LONG)))
-            .setResolver(new MessageResolver(cmdReceiver))
+            .setResolver(new ReceiverResolver(cmdReceiver))
             .registerNamedReceiver("cmd", ChatReceiver.class)
             .registerNamedReceiver("tv", TvReciever.class)
             .registerNamedReceiver("css", CssReceiver.class);
