@@ -94,14 +94,13 @@ public class MainActivity extends AppCompatActivity {
             .setOnJoin(msg -> {
                 getClient().getChannelSubscribersAsync(r -> {
                     subscriberList = r;
-                    // Refresh profile icons when users join
                     messageHistoryAdapter.notifyDataSetChanged();
                 });
             })
             .setOnException(error -> mainActivity.runOnUiThread(() ->
-                Toast.makeText(this, "Error : " + error.getMessage(), Toast.LENGTH_LONG)))
+                Toast.makeText(this, "Error : " + error.getMessage(), Toast.LENGTH_LONG).show()))
             .setResolver(new ReceiverResolver(cmdReceiver))
-            .registerNamedReceiver("cmd", ChatReceiver.class)
+            .registerReceiver(ChatReceiver.class)
             .registerNamedReceiver("tv", TvReciever.class)
             .registerNamedReceiver("css", CssReceiver.class);
 
