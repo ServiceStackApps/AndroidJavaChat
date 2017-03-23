@@ -232,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
 
         drawerToggle.syncState();
         UiHelpers.resetChannelDrawer(this, navigationView, getClient().getChannels());
-        getClient().start();
+        App.get().getServerEventsClient().start();
     }
 
     @Override
