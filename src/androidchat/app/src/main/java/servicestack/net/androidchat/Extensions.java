@@ -65,10 +65,8 @@ public class Extensions {
             TextView txtUser = (TextView)activity.findViewById(R.id.txtUserName);
             txtUser.setText(connectMsg.getDisplayName());
 
-            App.get().readBitmap(connectMsg.getProfileUrl(), bitmap -> {
-                ImageView imgProfile = (ImageView)activity.findViewById(R.id.imgProfile);
-                imgProfile.setImageBitmap(bitmap);
-            });
+            ImageView imgProfile = (ImageView)activity.findViewById(R.id.imgProfile);
+            App.get().readBitmap(connectMsg.getProfileUrl(), imgProfile::setImageBitmap);
         });
     }
 }

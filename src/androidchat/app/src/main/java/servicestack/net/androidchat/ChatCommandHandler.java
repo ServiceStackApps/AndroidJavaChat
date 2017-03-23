@@ -128,10 +128,8 @@ public class ChatCommandHandler {
             ? message.substring(4, message.length() - 1)
             : message;
 
-        App.get().readBitmap(url, bitmap -> {
-            ImageView chatBackground = (ImageView)parentActivity.findViewById(R.id.chat_background);
-            parentActivity.runOnUiThread(() -> chatBackground.setImageBitmap(bitmap));
-        });
+        ImageView chatBackground = (ImageView)parentActivity.findViewById(R.id.chat_background);
+        App.get().readBitmap(url, chatBackground::setImageBitmap);
     }
 
     public void changeBackgroundColor(String message, String cssSelector){

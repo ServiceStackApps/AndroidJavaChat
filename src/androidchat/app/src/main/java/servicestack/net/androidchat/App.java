@@ -24,11 +24,6 @@ public class App extends Application {
     private SharedPreferences prefs;
     private AndroidServerEventsClient serverEventsClient;
     private static App instance;
-    private LruCache bitmapCache = new LruCache(4 * 1024 * 1024) {// 4MiB
-        protected int sizeOf(String key, Bitmap value) {
-            return value.getByteCount();
-        }
-    };
 
     public App() {}
 
@@ -99,6 +94,12 @@ public class App extends Application {
         editor.apply();
     }
 
+    private LruCache bitmapCache = new LruCache(4 * 1024 * 1024) {// 4MiB
+        protected int sizeOf(String key, Bitmap value) {
+            return value.getByteCount();
+        }
+    };
+
     public void readBitmap(final String url, final AsyncSuccess<Bitmap> success){
         Bitmap cachedBitmap = (Bitmap)bitmapCache.get(url);
         if (cachedBitmap != null){
@@ -110,9 +111,7 @@ public class App extends Application {
             bitmapCache.put(url, imageBitmap);
             success.success(imageBitmap);
         },
-        error -> {
-            error.printStackTrace();
-        });
+        Throwable::printStackTrace);
     }
 
 }
