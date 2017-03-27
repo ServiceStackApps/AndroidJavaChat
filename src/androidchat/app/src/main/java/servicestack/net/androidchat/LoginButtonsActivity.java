@@ -13,12 +13,18 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.gson.JsonObject;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
@@ -27,10 +33,18 @@ import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.identity.TwitterLoginButton;
 
-import net.servicestack.android.AndroidServiceClient;
+import net.servicestack.client.JsonUtils;
 import net.servicestack.client.Log;
 
+import java.io.IOException;
+
 import io.fabric.sdk.android.Fabric;
+import okhttp3.Call;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * This Login Page signs in using Facebook and Twitter's SDK Buttons
@@ -45,6 +59,8 @@ public class LoginButtonsActivity extends AppCompatActivity {
     private LoginButton btnFacebookLogin;
     private CallbackManager facebookCallback;
     private Button btnGuestLogin;
+    GoogleApiClient googleApiClient;
+    private static final int RC_SIGN_IN = 9001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,6 +158,20 @@ public class LoginButtonsActivity extends AppCompatActivity {
             }
         });
 
+        SignInButton btnGoogleSignIn = (SignInButton) findViewById(R.id.sign_in_button);
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestServerAuthCode(getResources().getString(R.string.google_key))
+            .build();
+        googleApiClient = new GoogleApiClient.Builder(this)
+            .enableAutoManage(this, r -> { /* Handle On Connection Failed...*/ })
+            .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+            .build();
+        btnGoogleSignIn.setOnClickListener(v -> {
+            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+            startActivityForResult(signInIntent, RC_SIGN_IN);
+        });
+
         Button btnGuestLogin = (Button)findViewById(R.id.btnGuestLogin);
         btnGuestLogin.setOnClickListener(view -> {
             UiHelpers.setStatus(txtStatus, "Opening chat as guest...");
@@ -171,6 +201,59 @@ public class LoginButtonsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         btnTwitterLogin.onActivityResult(requestCode, resultCode, data);
         facebookCallback.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN) {
+            handleGoogleSignInResult(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
+        }
+    }
+
+    private void handleGoogleSignInResult(GoogleSignInResult result) {
+        if (result.isSuccess()) {
+            GoogleSignInAccount acct = result.getSignInAccount();
+            UiHelpers.setStatus(txtStatus, "Local google sign-in successful, signing into server...");
+
+            Activity activity = this;
+            OkHttpClient client = new OkHttpClient();
+            RequestBody requestBody = new FormBody.Builder()
+                .add("grant_type", "authorization_code")
+                .add("client_id", getResources().getString(R.string.google_key))
+                .add("client_secret", getResources().getString(R.string.google_secret))
+                .add("redirect_uri","")
+                .add("code", acct.getServerAuthCode())
+                .build();
+            Request request = new Request.Builder()
+                .url("https://www.googleapis.com/oauth2/v4/token")
+                .post(requestBody)
+                .build();
+            client.newCall(request).enqueue(new okhttp3.Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    UiHelpers.setStatus(txtStatus, "Failed to retrieve AccessToken from Google");
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String json = response.body().string();
+                    JsonObject obj = JsonUtils.toJsonObject(json);
+                    String accessToken = obj.get("access_token").getAsString();
+                    App.get().saveGoogleAccessToken(accessToken);
+
+                    App.get().getServiceClient().postAsync(new dtos.Authenticate()
+                        .setProvider("GoogleOAuth")
+                        .setAccessToken(accessToken)
+                        .setRememberMe(true),
+                        r -> {
+                            UiHelpers.setStatus(txtStatus, "Server google sign-in successful, opening chat...");
+                            Intent intent = new Intent(activity, MainActivity.class);
+                            stopProgressBar();
+                            startActivity(intent);
+                        },
+                        error -> {
+                            UiHelpers.setStatusError(txtStatus, "Server google sign-in failed", error);
+                            stopProgressBar();
+                        });
+                }
+            });
+        }
     }
 
     private void startProgressBar(){

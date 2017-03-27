@@ -11,6 +11,9 @@
     <string name="twitter_key">8dXLKcaGWqrtkC02uoETHVzat</string>
     <string name="twitter_secret">v6DTRjK5o6dwSPrA5ipbMzXwMybGHuJZdcazip2KbUQtBZ4244</string>
 
+    <string name="google_key">1052104404413-ltjkinrgo98st0393ogjcc39va25ll0p.apps.googleusercontent.com</string>
+    <string name="google_secret">GXy14QuFXGArhs-ZCMS0qsil</string>
+
     <!-- For: http://localhost:11001/ -->
     <!--<string name="twitter_key">3H1FHjGbA1N0n0aT5yApA</string>-->
     <!--<string name="twitter_secret">MLrZ0ujK6DwyjlRk2YLp6HwSdoBjtuqwXeHDQLv0Q</string>-->

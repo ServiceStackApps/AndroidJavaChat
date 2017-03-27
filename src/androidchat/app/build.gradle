@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         maven { url 'https://maven.fabric.io/public' }
+        jcenter()
     }
 
     dependencies {
@@ -10,6 +11,7 @@ buildscript {
         // We recommend changing it to the latest version from our changelog:
         // https://docs.fabric.io/android/changelog.html#fabric-gradle-plugin
         classpath 'io.fabric.tools:gradle:1.+'
+        classpath 'com.google.gms:google-services:3.0.0'
     }
 }
 
@@ -52,12 +54,13 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.2.0'
-    compile 'com.android.support:design:25.2.0'
+    compile 'com.android.support:appcompat-v7:25.3.0'
+    compile 'com.android.support:design:25.3.0'
     compile 'net.servicestack:android:1.0.31'
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
     compile('com.twitter.sdk.android:twitter:2.3.1@aar') {
         transitive = true;
     }
+    compile 'com.google.android.gms:play-services-auth:10.2.1'
     testCompile 'junit:junit:4.12'
 }

@@ -63,6 +63,14 @@ public class App extends Application {
                 .setRememberMe(true);
         }
 
+        String googleAccessToken = prefs.getString("google.AccessToken", null);
+        if (googleAccessToken != null){
+            return new dtos.Authenticate()
+                .setProvider("GoogleOAuth")
+                .setAccessToken(googleAccessToken)
+                .setRememberMe(true);
+        }
+
         String twitterAccessToken = prefs.getString("twitter.AccessToken", null);
         String twitterAccessSecret = prefs.getString("twitter.AccessTokenSecret", null);
 
@@ -83,12 +91,19 @@ public class App extends Application {
         editor.apply();
     }
 
+    public void saveGoogleAccessToken(String accessToken){
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("google.AccessToken", accessToken);
+        editor.apply();
+    }
+
     public void logout(){
         App.get().getServiceClient().clearCookies();    //Logout server
 
         LoginManager.getInstance().logOut();            //Logout facebook
 
-        SharedPreferences.Editor editor = prefs.edit(); //Logout twitter
+        SharedPreferences.Editor editor = prefs.edit(); //Logout google + twitter
+        editor.remove("google.AccessToken");
         editor.remove("twitter.AccessToken");
         editor.remove("twitter.AccessTokenSecret");
         editor.apply();
