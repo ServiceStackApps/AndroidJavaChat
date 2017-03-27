@@ -175,6 +175,7 @@ respective installation guides:
 
  - [Install Twitter SDK](https://fabric.io/kits/android/twitterkit/install)
  - [Install Facebook SDK](https://developers.facebook.com/docs/android/getting-started#androidstudio)
+ - [Install Google SDK](https://developers.google.com/identity/sign-in/android/sign-in)
 
 ### Login Activities
 
@@ -216,7 +217,7 @@ it will load the `LoginButtonsActivity`:
 
 ![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/java/java-android-login-buttons.png)
 
-Where we just use Twitter's and Facebook's Login Button widgets to render the UI in 
+Where we just use Twitter's, Facebook's and Google's Login Button widgets to render the UI in 
 [login_buttons.xml](https://github.com/ServiceStackApps/AndroidJavaChat/blob/master/src/androidchat/app/src/main/res/layout/login_buttons.xml):
 
 ```xml
@@ -232,6 +233,11 @@ Where we just use Twitter's and Facebook's Login Button widgets to render the UI
     android:layout_gravity="center_horizontal"
     android:layout_marginTop="30dp"
     android:layout_marginBottom="30dp" />
+
+<com.google.android.gms.common.SignInButton
+    android:id="@+id/sign_in_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
 
 <Button
     android:text="Guest Login"
@@ -324,6 +330,9 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
     btnTwitterLogin.onActivityResult(requestCode, resultCode, data);
     facebookCallback.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == RC_SIGN_IN) {
+        handleGoogleSignInResult(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
+    }
 }
 ```
 
@@ -383,6 +392,114 @@ btnFacebookLogin.registerCallback(facebookCallback, new FacebookCallback<LoginRe
 The Authentication request to our Chat Server is similar to Twitter's except we only need to send 1 
 AccessToken to Authenticate with the Server and we don't need to explicitly save the User's Access Token
 as Facebook's SDK does this for us behind the scenes.
+
+### Signing in with Google SignIn Button
+
+Whilst the sign-in process is similar, Google SignIn requires a lot more effort to setup and leaves you
+to implement a lot of the mechanics yourself starting with having to choose an arbitrary Request Code
+which you'll need to use to manually check whether the Google SignIn Activity has completed, this can
+be any number, e.g:
+
+```java
+private static final int RC_SIGN_IN = 9001; //Arbitrary Request Code
+```
+
+Then you'll need to configure your preferred `GoogleSignInOptions`, as we want to be able to retrieve the
+AccessToken we need to popoulate `requestServerAuthCode()` with our Google OAuth App Id:
+
+> If you don't have a Google App, one can be created at [console.developers.google.com/apis/credentials](https://console.developers.google.com/apis/credentials)
+
+```java
+SignInButton btnGoogleSignIn = (SignInButton) findViewById(R.id.sign_in_button);
+GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+    .requestEmail()
+    .requestServerAuthCode(getResources().getString(R.string.google_key))
+    .build();
+googleApiClient = new GoogleApiClient.Builder(this)
+    .enableAutoManage(this, r -> { /* Handle On Connection Failed...*/ })
+    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+    .build();
+btnGoogleSignIn.setOnClickListener(v -> {
+    Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+    startActivityForResult(signInIntent, RC_SIGN_IN);
+});
+```
+
+You'll then need to configure a `GoogleApiClient` with your SignIn Options and then manually bind 
+Google's `SignInButton` to launch a new SignIn Intent with our custom `RC_SIGN_IN`.
+
+Once the User has authorized with Google we're notified in `onActivityResult()` which gets called back
+with our custom `RC_SIGN_IN` to let us know we can process the Google SignIn Result:
+
+```java
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    //...
+    if (requestCode == RC_SIGN_IN) {
+        handleGoogleSignInResult(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
+    }
+}
+```
+
+If the `GoogleSignInResult` was successful the User has Signed in locally to our App at that point but 
+as we need to Authenticate the User with the Chat Server we need to retrieve their AccessToken. 
+Unfortunately Google only returns us a Server Auth Code which we need to use to call another Google API,
+passing in our OAuth App Secret to get the User's AccessToken for our App:
+
+```java
+private void handleGoogleSignInResult(GoogleSignInResult result) {
+    if (result.isSuccess()) {
+        GoogleSignInAccount acct = result.getSignInAccount();
+        UiHelpers.setStatus(txtStatus, "Local google sign-in successful, signing into server...");
+
+        Activity activity = this;
+        OkHttpClient client = new OkHttpClient();
+        RequestBody requestBody = new FormBody.Builder()
+            .add("grant_type", "authorization_code")
+            .add("client_id", getResources().getString(R.string.google_key))
+            .add("client_secret", getResources().getString(R.string.google_secret))
+            .add("redirect_uri","")
+            .add("code", acct.getServerAuthCode())
+            .build();
+        Request request = new Request.Builder()
+            .url("https://www.googleapis.com/oauth2/v4/token")
+            .post(requestBody)
+            .build();
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                UiHelpers.setStatus(txtStatus, "Failed to retrieve AccessToken from Google");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String json = response.body().string();
+                JsonObject obj = JsonUtils.toJsonObject(json);                
+                String accessToken = obj.get("access_token").getAsString();
+
+                App.get().saveGoogleAccessToken(accessToken);
+                App.get().getServiceClient().postAsync(new dtos.Authenticate()
+                    .setProvider("GoogleOAuth")
+                    .setAccessToken(accessToken)
+                    .setRememberMe(true),
+                    r -> {
+                        UiHelpers.setStatus(txtStatus, "Server google sign-in successful, opening chat...");
+                        stopProgressBar();
+                        startActivity(new Intent(activity, MainActivity.class));
+                    },
+                    error -> {
+                        UiHelpers.setStatusError(txtStatus, "Server google sign-in failed", error);
+                        stopProgressBar();
+                    });
+            }
+        });
+    }
+}
+```
+
+Once we retrieve the `accessToken` the process is similar to our Twitter login where we save the AccessToken
+to allow auto-SignIn's on App Restarts, we then use the `accessToken` to Authenticate with the Chat Server
+then load the `MainActivity` to establish our Authenticated Server Events connection.
 
 ### Anonymous Sign In
 

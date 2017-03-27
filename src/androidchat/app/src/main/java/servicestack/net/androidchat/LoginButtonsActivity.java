@@ -214,16 +214,16 @@ public class LoginButtonsActivity extends AppCompatActivity {
             Activity activity = this;
             OkHttpClient client = new OkHttpClient();
             RequestBody requestBody = new FormBody.Builder()
-                .add("grant_type", "authorization_code")
-                .add("client_id", getResources().getString(R.string.google_key))
-                .add("client_secret", getResources().getString(R.string.google_secret))
-                .add("redirect_uri","")
-                .add("code", acct.getServerAuthCode())
-                .build();
+                    .add("grant_type", "authorization_code")
+                    .add("client_id", getResources().getString(R.string.google_key))
+                    .add("client_secret", getResources().getString(R.string.google_secret))
+                    .add("redirect_uri","")
+                    .add("code", acct.getServerAuthCode())
+                    .build();
             Request request = new Request.Builder()
-                .url("https://www.googleapis.com/oauth2/v4/token")
-                .post(requestBody)
-                .build();
+                    .url("https://www.googleapis.com/oauth2/v4/token")
+                    .post(requestBody)
+                    .build();
             client.newCall(request).enqueue(new okhttp3.Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
@@ -235,22 +235,21 @@ public class LoginButtonsActivity extends AppCompatActivity {
                     String json = response.body().string();
                     JsonObject obj = JsonUtils.toJsonObject(json);
                     String accessToken = obj.get("access_token").getAsString();
-                    App.get().saveGoogleAccessToken(accessToken);
 
+                    App.get().saveGoogleAccessToken(accessToken);
                     App.get().getServiceClient().postAsync(new dtos.Authenticate()
-                        .setProvider("GoogleOAuth")
-                        .setAccessToken(accessToken)
-                        .setRememberMe(true),
-                        r -> {
-                            UiHelpers.setStatus(txtStatus, "Server google sign-in successful, opening chat...");
-                            Intent intent = new Intent(activity, MainActivity.class);
-                            stopProgressBar();
-                            startActivity(intent);
-                        },
-                        error -> {
-                            UiHelpers.setStatusError(txtStatus, "Server google sign-in failed", error);
-                            stopProgressBar();
-                        });
+                                    .setProvider("GoogleOAuth")
+                                    .setAccessToken(accessToken)
+                                    .setRememberMe(true),
+                            r -> {
+                                UiHelpers.setStatus(txtStatus, "Server google sign-in successful, opening chat...");
+                                stopProgressBar();
+                                startActivity(new Intent(activity, MainActivity.class));
+                            },
+                            error -> {
+                                UiHelpers.setStatusError(txtStatus, "Server google sign-in failed", error);
+                                stopProgressBar();
+                            });
                 }
             });
         }
