@@ -393,19 +393,19 @@ The Authentication request to our Chat Server is similar to Twitter's except we 
 AccessToken to Authenticate with the Server and we don't need to explicitly save the User's Access Token
 as Facebook's SDK does this for us behind the scenes.
 
-### Signing in with Google SignIn Button
+### Login with Google SignIn Button
 
-Whilst the sign-in process is similar, Google SignIn requires a lot more effort to setup and leaves you
-to implement a lot of the mechanics yourself starting with having to choose an arbitrary Request Code
-which you'll need to use to manually check whether the Google SignIn Activity has completed, this can
+Whilst the sign-in process is similar, Google SignIn requires more effort to setup as you're left with
+implementing a lot of the mechanics yourself starting with having to choose an arbitrary Request Code
+which you'll need to use to manually check when the Google SignIn Activity has completed, this can
 be any number, e.g:
 
 ```java
 private static final int RC_SIGN_IN = 9001; //Arbitrary Request Code
 ```
 
-Then you'll need to configure your preferred `GoogleSignInOptions`, as we want to be able to retrieve the
-AccessToken we need to popoulate `requestServerAuthCode()` with our Google OAuth App Id:
+We'll then need to configure your preferred `GoogleSignInOptions`, as we want to be able to retrieve the
+User's AccessToken we need to popoulate `requestServerAuthCode()` with our Google OAuth App Id:
 
 > If you don't have a Google App, one can be created at [console.developers.google.com/apis/credentials](https://console.developers.google.com/apis/credentials)
 
@@ -425,8 +425,8 @@ btnGoogleSignIn.setOnClickListener(v -> {
 });
 ```
 
-You'll then need to configure a `GoogleApiClient` with your SignIn Options and then manually bind 
-Google's `SignInButton` to launch a new SignIn Intent with our custom `RC_SIGN_IN`.
+We use that to configure a `GoogleApiClient` and then manually bind Google's `SignInButton` click handler 
+to launch a new SignIn Intent with our custom `RC_SIGN_IN`.
 
 Once the User has authorized with Google we're notified in `onActivityResult()` which gets called back
 with our custom `RC_SIGN_IN` to let us know we can process the Google SignIn Result:
@@ -442,7 +442,7 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 ```
 
 If the `GoogleSignInResult` was successful the User has Signed in locally to our App at that point but 
-as we need to Authenticate the User with the Chat Server we need to retrieve their AccessToken. 
+as we need to Authenticate the User with the Chat Server we also need to retrieve their AccessToken. 
 Unfortunately Google only returns us a Server Auth Code which we need to use to call another Google API,
 passing in our OAuth App Secret to get the User's AccessToken for our App:
 
@@ -497,9 +497,9 @@ private void handleGoogleSignInResult(GoogleSignInResult result) {
 }
 ```
 
-Once we retrieve the `accessToken` the process is similar to our Twitter login where we save the AccessToken
-to allow auto-SignIn's on App Restarts, we then use the `accessToken` to Authenticate with the Chat Server
-then load the `MainActivity` to establish our Authenticated Server Events connection.
+Once we retrieve the `accessToken` the process is similar to Twitter's where we save the `AccessToken` 
+to allow auto-SignIn's on restarts of our App, we then use the `accessToken` to Authenticate with the 
+Chat Server before loading the `MainActivity` to establish our Authenticated Server Events connection.
 
 ### Anonymous Sign In
 
