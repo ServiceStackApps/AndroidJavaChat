@@ -543,7 +543,7 @@ Which asks our [App singleton](https://github.com/ServiceStackApps/AndroidJavaCh
 had their AccessToken saved.
 
 For Facebook we can query `AccessToken.getCurrentAccessToken()` to check for an existing AccessToken
-whilst for Twitter we check the Users `SharedPreferences` which manage ourselves:
+whilst for Twitter and Google we check the Users `SharedPreferences` which we manage ourselves:
 
 ```java
 public dtos.Authenticate getSavedAccessToken(){
