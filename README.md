@@ -15,7 +15,7 @@ are idiomatic ports of their C# equivalent
 enabling both projects to leverage an end-to-end Typed API that significantly reduces the effort to port from 
 their original C# sources, rendering the porting effort down to a straight-forward 1:1 mapping exercise into Java 8 syntax.
 
-[![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/java/java-android-chat-screenshot-540x960.png)](https://github.com/ServiceStackApps/AndroidJavaChat)
+[![](https://raw.githubusercontent.com/ServiceStack/docs/master/docs/images/java/java-android-chat-screenshot-auth.png)](https://github.com/ServiceStackApps/AndroidJavaChat)
 
 ## Configuring the Server Events Client
 
