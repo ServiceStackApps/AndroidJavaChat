@@ -164,7 +164,7 @@ public class TvReciever extends ServerEventReceiver {
 }
 ```
 
-## Integrated Facebook and Twitter Logins
+## Integrated Facebook, Twitter and Google Logins
 
 As we're now using Java we get direct access to the latest 3rd Party Android components which we've taken 
 advantage of to leverage Facebook's and Twitter's SDK's to handle the OAuth flow allowing Users to Sign-in 
@@ -173,8 +173,8 @@ with their Facebook or Twitter account.
 Before we can make use of their SDK's we need to configure them with our project by following their 
 respective installation guides:
 
- - [Install Twitter SDK](https://fabric.io/kits/android/twitterkit/install)
  - [Install Facebook SDK](https://developers.facebook.com/docs/android/getting-started#androidstudio)
+ - [Install Twitter SDK](https://fabric.io/kits/android/twitterkit/install)
  - [Install Google SDK](https://developers.google.com/identity/sign-in/android/sign-in)
 
 ### Login Activities
