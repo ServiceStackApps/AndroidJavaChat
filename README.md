@@ -555,6 +555,14 @@ public dtos.Authenticate getSavedAccessToken(){
             .setRememberMe(true);
     }
 
+    String googleAccessToken = prefs.getString("google.AccessToken", null);
+    if (googleAccessToken != null){
+        return new dtos.Authenticate()
+            .setProvider("GoogleOAuth")
+            .setAccessToken(googleAccessToken)
+            .setRememberMe(true);
+    }
+
     String twitterAccessToken = prefs.getString("twitter.AccessToken", null);
     String twitterAccessSecret = prefs.getString("twitter.AccessTokenSecret", null);
 
@@ -572,6 +580,12 @@ public void saveTwitterAccessToken(TwitterAuthToken authToken){
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString("twitter.AccessToken", authToken.token);
     editor.putString("twitter.AccessTokenSecret", authToken.secret);
+    editor.apply();
+}
+
+public void saveGoogleAccessToken(String accessToken){
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putString("google.AccessToken", accessToken);
     editor.apply();
 }
 ```
